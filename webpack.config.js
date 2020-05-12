@@ -15,7 +15,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'loki-session-client.js',
+    filename: 'loki-session.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'LokiSessionClient',
     libraryTarget: 'umd',
