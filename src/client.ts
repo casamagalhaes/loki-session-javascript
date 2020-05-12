@@ -136,7 +136,7 @@ export default class LokiSession extends EventEmitter {
         return this;
     }
 
-    destroySession(session: LokiSession) {
+    destroy() {
         this.logger.debug(`loki register destroy session:`);
         this.session = null;
         this.io.disconnect();
