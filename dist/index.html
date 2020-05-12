@@ -60,10 +60,13 @@
         <h2>Count:</h2>
         <h2 id="sessionCount">0</h2>
     </div>
+    <div>
+        <button id="logout">Sair</button>
+    </div>
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
-    <script src="../dist/bundle.js"></script>
+    <script src="/loki-session-client.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         $(function () {
@@ -83,24 +86,14 @@
                 debug: true
             });
 
-            client.connected(() => client.registerSession(session));
-            client.onSessionInfo((value) => {
-                $('#messages').append($('<li>').text(JSON.stringify(value)));
-            });
-            client.onSessionCount((value) => {
-                $('#sessionCount').text(value);
-            });
-
             $('form').submit(function () {
-                client.registerSession({
-                    ...session,
-                    identity: {
-                        ...session.identity,
-                        name: $('#m').val()
-                    }
-                });
+                client.authenticate(session);
                 return false;
             });
+
+            $('#logout').click(() => {
+                client.destroySession();
+            })
         });
     </script>
 </body>

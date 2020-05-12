@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: './src/index.js',
   module: {
     rules: [
       {
@@ -15,7 +15,9 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'loki-session-client.js',
     path: path.resolve(__dirname, 'dist'),
+    library: 'LokiSessionClient',
+    libraryTarget: 'umd',
   },
 };

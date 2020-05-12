@@ -1,16 +1,8 @@
 import * as io from 'socket.io-client';
-
-interface LokiTenant {
-    id: string;
-}
-
-interface LokiIdentity {
-    principalId: string;
-}
+import { generateUniqueId, storageGet, storageSet } from './utils'
 
 interface LokiSession {
-    tenant: LokiTenant,
-    identity: LokiIdentity;
+    sessionToken: string
 }
 
 interface LokiSessionClientOptions {
@@ -42,16 +34,27 @@ class Logger {
 
 export default class LokiSessionClient {
     options: LokiSessionClientOptions;
-    websocket: any;
+    io: any;
     session: LokiSession;
     logger: Logger;
+    deviceId: string;
 
     constructor(options: LokiSessionClientOptions) {
         this.options = options;
         this.logger = new Logger({ debug: options.debug || false });
-        this.websocket = io(this.endpoint);
-        this.logger.debug(`loki session endpoint: ${this.endpoint}`);
-        this.registeListeners();
+        this.io = io(this.endpoint, { autoConnect: false });
+        this.initialize();
+    }
+
+    initialize() {
+        let deviceId = storageGet('loki:deviceId');
+        
+        if(!deviceId) {
+            deviceId = generateUniqueId();
+            storageSet('loki:deviceId', deviceId)
+        }
+
+        this.deviceId = deviceId;
     }
 
     get appId() {
@@ -59,14 +62,33 @@ export default class LokiSessionClient {
     }
 
     get endpoint() {
-        const url = this.options.endpoint || 'https://ws-sessions.casamagalhaes.service';
-        return `${url}/${this.appId}`
+        const url = this.options.endpoint || 'https://sessions.casamagalhaes.service';
+        return url
     }
 
-    async registerSession(session: LokiSession) {
+    authenticate(session: LokiSession) {
         this.logger.debug(`loki register session:`, session);
         this.session = session;
-        this.emit('set_session', session);
+
+        this.io.on('connect', () => {
+            this.emit('authentication', {
+                ...session,
+                deviceInfo: this.deviceInfo
+            });
+        });
+
+        this.io.on('unauthorized', (reason: any) => {
+            this.logger.error('Unauthorized', reason)
+            this.io.disconnect();
+        });
+
+        this.io.open();
+        return this;
+    }
+
+    destroySession(session: LokiSession) {
+        this.logger.debug(`loki register destroy session:`);
+        this.emit('logout');
         return this;
     }
 
@@ -75,31 +97,18 @@ export default class LokiSessionClient {
         return this;
     }
 
-    onSessionInfo(callback: any) {
-        this.on('session_info', callback);
-        return this;
-    }
-
-    onSessionCount(callback: any) {
-        this.on('session_count', callback);
-        return this;
+    deviceInfo() {
+        return {
+            deviceId: this.deviceId,
+            userAgent: navigator.userAgent || 'Undefined'
+        }
     }
 
     on(event: string, callback: any) {
-        this.websocket.on(event, callback);
+        this.io.on(event, callback);
     }
 
-    emit(event: string, payload: any) {
-        this.websocket.emit(event, payload);
-    }
-
-    private registeListeners() {
-        this.websocket.on('connected_stabilished', () => {
-            this.logger.debug(`loki connected_stabilished:`);
-        });
-
-        this.websocket.on('session_info', (payload: any) => {
-            this.logger.debug(`loki session_info:`, payload);
-        });
+    emit(event: string, payload?: any) {
+        this.io.emit(event, payload);
     }
 }
