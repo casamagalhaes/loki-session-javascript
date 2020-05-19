@@ -100,7 +100,7 @@ export default class LokiSession extends EventEmitter {
 
     authenticate(session: Session) {
         this.session = session;
-        const deviceInfo = this.deviceInfo;
+        const deviceInfo = this.deviceInfo();
 
         this.logger.debug(`loki register session:`, {session, deviceInfo});
 
