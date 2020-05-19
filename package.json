@@ -1,12 +1,14 @@
 {
   "name": "loki-session-javascript",
   "version": "1.0.0",
-  "main": "dist/loki-session.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",
+  "files": ["dist/**/*"],
   "license": "ISC",
   "devDependencies": {
     "@types/socket.io-client": "^1.4.32",
