@@ -99,38 +99,43 @@ export default class LokiSession extends EventEmitter {
     }
 
     authenticate(session: Session) {
-        this.logger.debug(`loki register session:`, session);
         this.session = session;
+        const deviceInfo = this.deviceInfo;
 
-        this.io.on('connect', () => {
+        this.logger.debug(`loki register session:`, {session, deviceInfo});
+
+        this.io.on('connected_stabilished', () => {
+            this.logger.debug(`loki socket connected stabilished`);
             this.emit('connected')
             this.io.emit('authentication', {
                 ...session,
-                deviceInfo: this.deviceInfo
+                deviceInfo
             });
         });
 
         this.io.on('authenticated', () => {
+            this.logger.debug(`loki socket authenticated`);
             this.logger.debug('Authenticated');
             this.emit('authenticated')
         });
 
         this.io.on('unauthorized', (reason: any) => {
-            this.logger.error('Unauthorized', reason)
+            this.logger.debug(`loki socket unauthorized`, reason);
             this.emit('unauthorized')
             this.io.disconnect();
         });
 
         this.io.on('disconnect', (reason: any) => {
-            this.logger.debug('Disconnected', reason)
+            this.logger.debug(`loki socket disconnect`, reason);
             this.emit('disconnect', reason)
         });
 
         this.io.on('error', (err: any) => {
-            this.logger.error('Error', err)
+            this.logger.debug(`loki socket error`, err);
             this.emit('error', err)
         });
 
+        this.logger.debug(`loki socket open connection`);
         this.io.open();
 
         return this;
@@ -140,11 +145,6 @@ export default class LokiSession extends EventEmitter {
         this.logger.debug(`loki register destroy session:`);
         this.session = null;
         this.io.disconnect();
-        return this;
-    }
-
-    connected(callback: any) {
-        this.io.on('connected_stabilished', callback);
         return this;
     }
 
