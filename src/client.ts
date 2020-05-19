@@ -91,11 +91,16 @@ export default class LokiSession extends EventEmitter {
     }
 
     private setupSocketIO() {
-        this.io = io(this.endpoint, {
+        const config = {
             path: this.socketPath,
             secure: this.socketSecure,
             autoConnect: false,
-        });
+        };
+
+        this.logger.debug(`loki socket.io endpoint:`, this.endpoint);
+        this.logger.debug(`loki socket.io config:`, config);
+
+        this.io = io(this.endpoint, config);
     }
 
     authenticate(session: Session) {
