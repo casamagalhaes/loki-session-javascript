@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable max-classes-per-file */
 /* eslint-disable class-methods-use-this */
-import * as io from 'socket.io-client';
+import io from 'socket.io-client';
 import { v4 as uuid } from 'uuid';
 import EventEmitter from './event-emitter';
 
@@ -85,7 +85,7 @@ export default class LokiSession extends EventEmitter {
     this.logger.debug('loki socket.io endpoint:', this.endpoint);
     this.logger.debug('loki socket.io config:', config);
 
-    this.io = io(this.endpoint, config);
+    this.socket = io(this.endpoint, config);
   }
 
   authenticate(session) {
@@ -94,38 +94,38 @@ export default class LokiSession extends EventEmitter {
 
     this.logger.debug('loki register session:', { session, deviceInfo });
 
-    this.io.on('connected_stabilished', () => {
+    this.socket.on('connected_stabilished', () => {
       this.logger.debug('loki socket connected stabilished');
       this.emit('connected');
-      this.io.emit('authentication', {
+      this.socket.emit('authentication', {
         ...session,
         deviceInfo,
       });
     });
 
-    this.io.on('authenticated', () => {
+    this.socket.on('authenticated', () => {
       this.logger.debug('loki socket authenticated');
       this.emit('authenticated');
     });
 
-    this.io.on('unauthorized', (reason) => {
+    this.socket.on('unauthorized', (reason) => {
       this.logger.debug('loki socket unauthorized', reason);
       this.emit('unauthorized');
-      this.io.disconnect();
+      this.socket.disconnect();
     });
 
-    this.io.on('disconnect', (reason) => {
+    this.socket.on('disconnect', (reason) => {
       this.logger.debug('loki socket disconnect', reason);
       this.emit('disconnect', reason);
     });
 
-    this.io.on('error', (err) => {
+    this.socket.on('error', (err) => {
       this.logger.debug('loki socket error', err);
       this.emit('error', err);
     });
 
     this.logger.debug('loki socket open connection');
-    this.io.open();
+    this.socket.open();
 
     return this;
   }
@@ -133,7 +133,7 @@ export default class LokiSession extends EventEmitter {
   destroy() {
     this.logger.debug('loki register destroy session:');
     this.session = null;
-    this.io.disconnect();
+    this.socket.disconnect();
     return this;
   }
 
