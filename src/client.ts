@@ -115,7 +115,6 @@ export default class LokiSession extends EventEmitter {
 
         this.io.on('authenticated', () => {
             this.logger.debug(`loki socket authenticated`);
-            this.logger.debug('Authenticated');
             this.emit('authenticated')
         });
 
