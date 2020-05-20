@@ -1,5 +1,14 @@
 ## loki-session-javascript
 
+
+#### Instalação
+
+```
+yarn add git+ssh://git@github.com:casamagalhaes/loki-session-javascript.git#master
+```
+
+#### Integração
+
 ```js
 import LokiSession from 'loki-session-javascript';
 
