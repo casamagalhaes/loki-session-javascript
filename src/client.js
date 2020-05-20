@@ -42,7 +42,7 @@ export default class LokiSession extends EventEmitter {
   }
 
   get apiUrl() {
-    const url = this.options.endpoint || 'https://sessions.casamagalhaes.service';
+    const url = this.options.endpoint || 'https://loki.casamagalhaes.service';
     return url;
   }
 
@@ -50,8 +50,12 @@ export default class LokiSession extends EventEmitter {
     return `${this.apiUrl}/${this.appId}`;
   }
 
+  get socketPrefix() {
+    return this.options.socketPrefix || '/socket';
+  }
+
   get socketPath() {
-    return `/${this.apiVersion}/socket`;
+    return this.options.socketPath || `${this.socketPrefix}/${this.apiVersion}`;
   }
 
   get socketSecure() {
