@@ -3,7 +3,7 @@
 ```js
 import LokiSession from 'loki-session-javascript';
 
-const client = new LokiSessionClient({ appId: 'varejofacil' });
+const client = new LokiSession({ appId: 'varejofacil' });
 
 /**
  * Se o loki não conseguir autorizar o token, irá enviar o evento `unauthorized`.
