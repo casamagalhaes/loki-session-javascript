@@ -1,16 +1,42 @@
 #loki-session-javascript
 
-<script src="/loki-session-client.js"></script>
-
 ```js
-const client = new LokiSessionClient({appId: 'varejofacil'});
+import LokiSession from 'loki-session-javascript';
+
+const client = new LokiSessionClient({ appId: 'varejofacil' });
+
+/**
+ * Se o loki não conseguir autorizar o token, irá enviar o evento `unauthorized`.
+ * Nesse momento é uma boa hora para realizar o logout do usuário na sua aplicação
+ * */
+client.on('unauthorized', function(reason) => {
+    console.err(reason);
+    // lógica para o logout
+});
+
+/**
+ * Quando o loki consegui autorizar o evento `authenticated` será enviado.
+ * */
+client.on('authenticated', function(err) => {
+    console.log('Sessão autorizada!')
+});
+
+/**
+ * Se houver qualquer erro durante a conexão com o socket, o evento `error` será enviado.
+ * */
+client.on('error', function(err) => {
+    console.err('Erro na conexão com o socket!')
+});
+
+
+// Exemplos de integração
 
 async function login(email, senha) {
-    // Realiza o login com o backend e retorna os tokens, inclusive o sessionToken
+    // Realiza o login com o backend e retornar os tokens, inclusive o sessionToken
     const { sessionToken } = await fazLoginComApi(email, senha);
 
     if(sessionToken) {
-        await client.authenticate({sessionToken});
+        await client.authenticate({ sessionToken });
     }
 };
 
@@ -24,22 +50,4 @@ async function onInit() {
     const { sessionToken } = await buscarDadosGravados();
     await client.authenticate({ sessionToken });
 };
-```
-
-```js
-// O loki não conseguiu autorizar o token enviado
-client.on('unauthorized', function(reason) => {
-    console.err(reason);
-    // Realizar o logout 
-});
-
-// após o loki confirmar a sessão
-client.on('authenticated', function(err) => {
-    console.err(err);
-});
-
-//
-client.on('error', function(err) => {
-    console.err(err);
-});
 ```

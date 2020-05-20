@@ -131,9 +131,16 @@ export default class LokiSession extends EventEmitter {
   }
 
   destroy() {
-    this.logger.debug('loki register destroy session:');
+    this.logger.debug('loki socket destroy session:');
     this.session = null;
-    this.socket.disconnect();
+
+    if (this.socket.connected) {
+      this.logger.debug('loki socket disconnect');
+      this.socket.disconnect();
+    } else {
+      this.logger.debug('loki socket already disconnected');
+    }
+
     return this;
   }
 
