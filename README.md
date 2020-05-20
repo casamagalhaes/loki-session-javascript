@@ -1,4 +1,4 @@
-#loki-session-javascript
+## loki-session-javascript
 
 ```js
 import LokiSession from 'loki-session-javascript';
