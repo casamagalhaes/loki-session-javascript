@@ -1,13 +1,9 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable max-classes-per-file */
 /* eslint-disable class-methods-use-this */
 import io from 'socket.io-client';
-import { v4 as uuid } from 'uuid';
 import EventEmitter from './event-emitter';
-
-function generateUniqueId() {
-  return uuid();
-}
 
 class Logger {
   constructor(options) {
@@ -15,13 +11,15 @@ class Logger {
   }
 
   debug(message, payload) {
-    // eslint-disable-next-line no-console
-    if (this.debugMode) console.debug(message, payload);
+    if (this.debugMode) {
+      if (payload) console.debug(message, payload);
+      else console.debug(message);
+    }
   }
 
   error(message, payload) {
-    // eslint-disable-next-line no-console
-    console.error(message, payload);
+    if (payload) console.error(message, payload);
+    else console.error(message);
   }
 }
 
@@ -34,21 +32,13 @@ export default class LokiSession extends EventEmitter {
     this.initialize();
   }
 
-  get appId() {
-    return this.options.appId;
-  }
-
   get apiVersion() {
     return this.options.apiVersion || 'v1';
   }
 
-  get apiUrl() {
+  get endpoint() {
     const url = this.options.endpoint || 'https://loki.casamagalhaes.services';
     return url;
-  }
-
-  get endpoint() {
-    return `${this.apiUrl}/${this.appId}`;
   }
 
   get socketPrefix() {
@@ -65,117 +55,82 @@ export default class LokiSession extends EventEmitter {
   }
 
   initialize() {
-    this.setupDevice();
+    this.logger.debug('[loki] initialize');
     this.setupSocketIO();
   }
 
-  setupDevice() {
-    let deviceId = this.storageGet('loki:deviceId');
-
-    if (!deviceId) {
-      deviceId = generateUniqueId();
-      this.storageSet('loki:deviceId', deviceId);
-    }
-
-    this.deviceId = deviceId;
+  get device() {
+    return {
+      userAgent: navigator.userAgent || 'Undefined',
+    };
   }
 
   setupSocketIO() {
+    this.logger.debug('[loki] setup socket');
+
     const config = {
       path: this.socketPath,
       secure: this.socketSecure,
       autoConnect: false,
     };
 
-    this.logger.debug('loki socket.io endpoint:', this.endpoint);
-    this.logger.debug('loki socket.io config:', config);
+    this.logger.debug('[loki] socket endpoint', this.endpoint);
+    this.logger.debug('[loki] socket config', config);
 
     this.socket = io(this.endpoint, config);
 
-    this.socket.on('connected_stabilished', () => {
-      this.logger.debug('loki socket connected stabilished');
+    this.socket.on('connection_established', () => {
+      this.logger.debug('[loki] socket connection established');
+
       this.emit('connected');
-      const session = this.getSession();
-      const deviceInfo = this.deviceInfo();
-      this.logger.debug('loki try authenticate with socket', { session, deviceInfo });
-      this.socket.emit('authentication', {
-        ...session,
-        deviceInfo,
-      });
+
+      const { session, device } = this;
+      const payload = { session, device };
+
+      this.logger.debug('[loki] socket trying to authenticate', payload);
+      this.socket.emit('authentication', payload);
     });
 
     this.socket.on('authenticated', () => {
-      this.logger.debug('loki socket authenticated');
+      this.logger.debug('[loki] socket authenticated');
       this.emit('authenticated');
     });
 
     this.socket.on('unauthorized', (reason) => {
-      this.logger.debug('loki socket unauthorized', reason);
+      this.logger.debug('[loki] socket unauthorized', reason);
       this.emit('unauthorized');
       this.socket.disconnect();
     });
 
     this.socket.on('disconnect', (reason) => {
-      this.logger.debug('loki socket disconnect', reason);
+      this.logger.debug('[loki] socket disconnect', reason);
       this.emit('disconnect', reason);
     });
 
     this.socket.on('error', (err) => {
-      this.logger.debug('loki socket error', err);
+      this.logger.debug('[loki] socket error', err);
       this.emit('error', err);
     });
   }
 
   authenticate(session) {
-    this.logger.debug('loki socket open connection');
-    this.setSession(session);
+    this.session = session;
+    this.logger.debug('[loki] socket open connection');
     this.socket.open();
     return this;
   }
 
   destroy() {
-    this.logger.debug('loki socket destroy session:');
-    this.setSession(null);
+    this.logger.debug('[loki] socket destroy session');
+    this.session = null;
 
     if (this.socket.connected) {
-      this.logger.debug('loki socket disconnect');
+      this.logger.debug('[loki] socket destroy connection');
       this.socket.disconnect();
     } else {
-      this.logger.debug('loki socket already disconnected');
+      this.logger.debug('[loki] socket already disconnected');
     }
 
     return this;
-  }
-
-  deviceInfo() {
-    return {
-      deviceId: this.deviceId,
-      userAgent: navigator.userAgent || 'Undefined',
-    };
-  }
-
-  getSession() {
-    return this.session;
-  }
-
-  setSession(session) {
-    this.session = session;
-    return this;
-  }
-
-  storageGet(key) {
-    if (window.localStorage) {
-      return window.localStorage.getItem(key);
-    }
-    this.logger.error('O browser não possui localStorage');
-    return null;
-  }
-
-  storageSet(key, value) {
-    if (window.localStorage) {
-      return window.localStorage.setItem(key, value);
-    }
-    this.logger.error('O browser não possui localStorage');
-    return null;
   }
 }
