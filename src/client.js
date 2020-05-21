@@ -59,7 +59,7 @@ export default class LokiSession extends EventEmitter {
     this.setupSocketIO();
   }
 
-  get device() {
+  get deviceInfo() {
     return {
       userAgent: navigator.userAgent || 'Undefined',
     };
@@ -84,8 +84,8 @@ export default class LokiSession extends EventEmitter {
 
       this.emit('connected');
 
-      const { session, device } = this;
-      const payload = { session, device };
+      const { sessionToken, deviceInfo } = this;
+      const payload = { sessionToken, deviceInfo };
 
       this.logger.debug('[loki] socket trying to authenticate', payload);
       this.socket.emit('authentication', payload);
@@ -113,8 +113,8 @@ export default class LokiSession extends EventEmitter {
     });
   }
 
-  authenticate(session) {
-    this.session = session;
+  authenticate(sessionToken) {
+    this.sessionToken = sessionToken;
     this.logger.debug('[loki] socket open connection');
     this.socket.open();
     return this;
@@ -122,7 +122,7 @@ export default class LokiSession extends EventEmitter {
 
   destroy() {
     this.logger.debug('[loki] socket destroy session');
-    this.session = null;
+    this.sessionToken = null;
 
     if (this.socket.connected) {
       this.logger.debug('[loki] socket destroy connection');
