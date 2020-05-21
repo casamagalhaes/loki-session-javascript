@@ -30,6 +30,7 @@ export default class LokiSession extends EventEmitter {
     super();
     this.options = options;
     this.logger = new Logger({ debug: options.debug || false });
+    this.session = {};
     this.initialize();
   }
 
@@ -90,17 +91,13 @@ export default class LokiSession extends EventEmitter {
     this.logger.debug('loki socket.io config:', config);
 
     this.socket = io(this.endpoint, config);
-  }
-
-  authenticate(session) {
-    this.session = session;
-    const deviceInfo = this.deviceInfo();
-
-    this.logger.debug('loki register session:', { session, deviceInfo });
 
     this.socket.on('connected_stabilished', () => {
       this.logger.debug('loki socket connected stabilished');
       this.emit('connected');
+      const session = this.getSession();
+      const deviceInfo = this.deviceInfo();
+      this.logger.debug('loki try authenticate with socket', { session, deviceInfo });
       this.socket.emit('authentication', {
         ...session,
         deviceInfo,
@@ -127,16 +124,18 @@ export default class LokiSession extends EventEmitter {
       this.logger.debug('loki socket error', err);
       this.emit('error', err);
     });
+  }
 
+  authenticate(session) {
     this.logger.debug('loki socket open connection');
+    this.setSession(session);
     this.socket.open();
-
     return this;
   }
 
   destroy() {
     this.logger.debug('loki socket destroy session:');
-    this.session = null;
+    this.setSession(null);
 
     if (this.socket.connected) {
       this.logger.debug('loki socket disconnect');
@@ -153,6 +152,15 @@ export default class LokiSession extends EventEmitter {
       deviceId: this.deviceId,
       userAgent: navigator.userAgent || 'Undefined',
     };
+  }
+
+  getSession() {
+    return this.session;
+  }
+
+  setSession(session) {
+    this.session = session;
+    return this;
   }
 
   storageGet(key) {
