@@ -42,7 +42,7 @@ export default class LokiSession extends EventEmitter {
   }
 
   get apiUrl() {
-    const url = this.options.endpoint || 'https://loki.casamagalhaes.service';
+    const url = this.options.endpoint || 'https://loki.casamagalhaes.services';
     return url;
   }
 
