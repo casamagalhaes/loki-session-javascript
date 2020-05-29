@@ -74,11 +74,7 @@ export default class LokiSession extends EventEmitter {
       autoConnect: false,
     };
 
-    this.logger.debug('[loki] socket endpoint', this.endpoint);
-    this.logger.debug('[loki] socket config', config);
-
     this.socket = io(this.endpoint, config);
-
     this.socket.on('connection_established', () => {
       this.logger.debug('[loki] socket connection established');
 
@@ -87,7 +83,7 @@ export default class LokiSession extends EventEmitter {
       const { sessionToken, deviceInfo } = this;
       const payload = { sessionToken, deviceInfo };
 
-      this.logger.debug('[loki] socket trying to authenticate', payload);
+      this.logger.debug('[loki] socket trying to authenticate');
       this.socket.emit('authentication', payload);
     });
 
@@ -98,7 +94,7 @@ export default class LokiSession extends EventEmitter {
 
     this.socket.on('unauthorized', (reason) => {
       this.logger.debug('[loki] socket unauthorized', reason);
-      this.emit('unauthorized');
+      this.emit('unauthorized', reason);
       this.socket.disconnect();
     });
 
