@@ -85,6 +85,19 @@ export default class LokiSession extends EventEmitter {
     };
   }
 
+
+  getTrackContex(extra = {}) {
+    const { sessionToken, deviceInfo } = this;
+    const socketId = (this.socket && this.socket.id) || '';
+
+    return {
+      socketId,
+      sessionToken,
+      deviceInfo,
+      ...(extra || {}),
+    };
+  };
+
   setupSocketIO() {
     this.logger.debug('[loki] setup socket');
 
@@ -94,22 +107,10 @@ export default class LokiSession extends EventEmitter {
       autoConnect: false
     };
 
-    const getTrackContext = (extra = {}) => {
-      const { sessionToken, deviceInfo } = this;
-      const socketId = (this.socket && this.socket.id) || '';
-
-      return {
-        socketId,
-        sessionToken,
-        deviceInfo,
-        ...(extra || {}),
-      };
-    };
-
     this.socket = io(this.endpoint, config);
     this.socket.on('connection_established', () => {
       this.logger.debug('[loki] socket connection established');
-      this.logger.track('LOKI_CONNECTION_ESTABLISHED', getTrackContext());
+      this.logger.track('LOKI_CONNECTION_ESTABLISHED', this.getTrackContext());
 
       this.emit('connected');
 
@@ -122,13 +123,13 @@ export default class LokiSession extends EventEmitter {
 
     this.socket.on('authenticated', () => {
       this.logger.debug('[loki] socket authenticated');
-      this.logger.track('LOKI_AUTHENTICATED', getTrackContext());
+      this.logger.track('LOKI_AUTHENTICATED', this.getTrackContext());
       this.emit('authenticated');
     });
 
     this.socket.on('unauthorized', (reason) => {
       this.logger.debug('[loki] socket unauthorized', reason);
-      this.logger.track('LOKI_UNAUTHORIZED', getTrackContext({ reason }));
+      this.logger.track('LOKI_UNAUTHORIZED', this.getTrackContext({ reason }));
       this.emit('unauthorized', reason);
       this.socket.disconnect();
     });
@@ -142,36 +143,36 @@ export default class LokiSession extends EventEmitter {
       }
 
       this.logger.debug('[loki] socket disconnect', reason);
-      this.logger.track('LOKI_DISCONNECT', getTrackContext({ reason }));
+      this.logger.track('LOKI_DISCONNECT', this.getTrackContext({ reason }));
       this.emit('disconnect', reason);
     });
 
     this.socket.on('error', (err) => {
       this.logger.debug('[loki] socket error', err);
-      this.logger.track('LOKI_ERROR', getTrackContext({ error: err }));
+      this.logger.track('LOKI_ERROR', this.getTrackContext({ error: err }));
       this.emit('error', err);
     });
 
     this.socket.on('ping', () => {
       this.logger.debug('[loki] socket ping');
-      this.logger.track('LOKI_PING', getTrackContext());
+      this.logger.track('LOKI_PING', this.getTrackContext());
     });
 
     this.socket.on('pong', () => {
       this.logger.debug('[loki] socket pong');
-      this.logger.track('LOKI_PONG', getTrackContext());
+      this.logger.track('LOKI_PONG', this.getTrackContext());
     });
 
     this.socket.on('reconnect_attempt', () => {
       this.logger.debug('[loki] socket reconnect_attempt');
-      this.logger.track('LOKI_RECONNECT_ATTEMPT', getTrackContext());
+      this.logger.track('LOKI_RECONNECT_ATTEMPT', this.getTrackContext());
     });
   }
 
   authenticate(sessionToken) {
     this.sessionToken = sessionToken;
     this.logger.debug('[loki] socket open connection');
-    this.logger.track('LOKI_AUTHENTICATE', getTrackContext());
+    this.logger.track('LOKI_AUTHENTICATE', this.getTrackContext());
     this.socket.open();
     return this;
   }
@@ -179,7 +180,7 @@ export default class LokiSession extends EventEmitter {
   destroy() {
     this.sessionToken = null;
     this.logger.debug('[loki] socket destroy session');
-    this.logger.track('LOKI_DESTROY', getTrackContext());
+    this.logger.track('LOKI_DESTROY', this.getTrackContext());
     this.socket.disconnect();
     return this;
   }
