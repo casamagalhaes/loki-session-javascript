@@ -13,7 +13,6 @@ jobs:
         registry-url: 'https://npm.pkg.github.com'
         scope: '@casamagalhaes'
     - run: yarn
-    - run: yarn test
     - run: yarn build
     - run: npm --no-git-tag-version version $RELEASE_TAG_NAME
       env:
