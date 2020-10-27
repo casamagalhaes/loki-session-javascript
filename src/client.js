@@ -16,9 +16,16 @@ function trackSmartlook(eventName, properties) {
 }
 
 class Logger {
-  constructor(options) {
-    this.debugMode = options.debug || window.LOKI_DEBUG_ENABLED || false;
-    this.enableTrack = options.enableTrack || window.LOKI_ENABLE_TRACK || false;
+  constructor(options = {}) {
+    this.options = options || {};
+  }
+
+  get debugMode() {
+    return this.options.debug || window.LOKI_DEBUG_ENABLED || false;
+  }
+
+  get enableTrack() {
+    return this.options.enableTrack || window.LOKI_ENABLE_TRACK || false;
   }
 
   track(eventName, properties) {
