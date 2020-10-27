@@ -85,8 +85,7 @@ export default class LokiSession extends EventEmitter {
     };
   }
 
-
-  getTrackContex(extra = {}) {
+  getTrackContext(extra = {}) {
     const { sessionToken, deviceInfo } = this;
     const socketId = (this.socket && this.socket.id) || '';
 
