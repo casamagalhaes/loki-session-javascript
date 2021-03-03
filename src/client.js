@@ -71,6 +71,8 @@ export default class LokiSession extends EventEmitter {
     const config = {
       path: this.socketPath,
       secure: this.socketSecure,
+      rememberUpgrade: true,
+      transports: ['websocket', 'polling'],
       autoConnect: false,
     };
 
