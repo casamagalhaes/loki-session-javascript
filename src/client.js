@@ -76,6 +76,8 @@ export default class LokiSession extends EventEmitter {
       autoConnect: false,
     };
 
+    this.logger.debug(`[loki] config: ${JSON.stringify(config)}`);
+
     this.socket = io(this.endpoint, config);
     this.socket.on('connection_established', () => {
       this.logger.debug('[loki] socket connection established');
