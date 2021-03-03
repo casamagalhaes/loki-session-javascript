@@ -19,7 +19,7 @@ const client = new LokiSession({ appId: 'varejofacil' });
  * Nesse momento é uma boa hora para realizar o logout do usuário na sua aplicação
  * */
 client.on('unauthorized', function(reason) => {
-    console.err(reason);
+    console.error(reason);
     // lógica para o logout
 });
 
@@ -34,7 +34,7 @@ client.on('authenticated', function(err) => {
  * Se houver qualquer erro durante a conexão com o socket, o evento `error` será enviado.
  * */
 client.on('error', function(err) => {
-    console.err('Erro na conexão com o socket!')
+    console.error('Erro na conexão com o socket!')
 });
 
 
