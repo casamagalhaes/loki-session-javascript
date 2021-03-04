@@ -26,6 +26,7 @@ class Logger {
 export default class LokiSession extends EventEmitter {
   constructor(options) {
     super();
+    this.version = '1.0.6';
     this.options = options;
     this.logger = new Logger({ debug: options.debug || false });
     this.session = {};
@@ -55,7 +56,7 @@ export default class LokiSession extends EventEmitter {
   }
 
   initialize() {
-    this.logger.debug('[loki] initialize');
+    this.logger.debug(`[loki ${this.version}] initialize`);
     this.setupSocketIO();
   }
 
