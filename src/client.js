@@ -56,7 +56,7 @@ export default class LokiSession extends EventEmitter {
   }
 
   initialize() {
-    this.logger.debug(`[loki ${this.version}] initialize`);
+    this.logger.debug(`[loki] initialize | version: ${this.version}`);
     this.setupSocketIO();
   }
 
